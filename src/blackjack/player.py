@@ -23,6 +23,8 @@ class Player:
         """Add to bet"""
         if amount % 10 != 0:
             raise IllegalBet("Must bet in multiples of 10!")
+        elif self.wallet.balance - amount < 0:
+            raise IllegalBet("Cannot bet more than you have!")
         else:
             self.current_bet += amount
 
