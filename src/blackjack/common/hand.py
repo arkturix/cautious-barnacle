@@ -3,11 +3,15 @@
 
 class Hand:
 
-    def __init__(self) -> None:
-        self.hand = []
+    def __init__(self, cards = []) -> None:
+        self.hand = cards
 
     def __add__(self, card: tuple):
         self.hand.append(card)
+
+    def split(self):
+        """Split the hand"""
+        return Hand(cards=[self.hand.pop()])
 
     def total(self):
         """Get the total value of the hand"""
@@ -31,4 +35,7 @@ class Hand:
                 hand_value += 1
             self.hand.pop(card)
         return hand_value
-        
+    
+    def reset(self):
+        """Empty the hand at the end of a round"""
+        self.hand = []
