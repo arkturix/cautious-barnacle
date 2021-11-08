@@ -7,9 +7,8 @@ class Dealer:
 
     def __init__(self, num_decks: int = 1) -> None:
         self.deck = Deck(num_of_decks=num_decks)
-        self.display_card = None
-        self.hole_card = None
         self.hand = Hand()
+        self.resolve()
 
     def deal(self) -> list:
         """Deal the initial cards for the game"""
@@ -22,4 +21,6 @@ class Dealer:
 
     def resolve(self):
         """Resolve the dealer's hand"""
-        pass
+        self.display_card = None
+        self.hole_card = None
+        self.hand.reset()
