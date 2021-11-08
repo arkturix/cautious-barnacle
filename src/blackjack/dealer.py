@@ -1,5 +1,6 @@
 """Dealer class"""
 from blackjack.common import Deck
+from blackjack.common import Hand
 
 
 class Dealer:
@@ -8,12 +9,14 @@ class Dealer:
         self.deck = Deck(num_of_decks=num_decks)
         self.display_card = None
         self.hole_card = None
-        self.hand = []
+        self.hand = Hand()
 
     def deal(self) -> list:
         """Deal the initial cards for the game"""
         self.display_card = self.deck.draw()
         self.hole_card = self.deck.draw()
+        self.hand + self.display_card
+        self.hand + self.hole_card
         player_hand = [self.deck.draw() for i in range(2)]
         return player_hand
 
