@@ -1,8 +1,6 @@
 """Main application file"""
-from blackjack import player
-from blackjack.common import exceptions
 from blackjack.player import Player
-from blackjack.common.exceptions import InvalidInput
+from blackjack.common.exceptions import InvalidInput, IllegalBet
 import tenacity
 import os
 
@@ -49,12 +47,13 @@ class App:
                 # Show player cards
                 self._player_display_cards()
                 # Prompt user for action: bet, hit, double, split, surrender, stand
-                # Repeat until either hold or bust
                 try:
                     action = self._prompt_player_action()
                 except tenacity.RetryError:
                     print("Failed to get a valid action...")
                     self._game_over()
+                self._do_action(action=action, round=round_counter)
+                round_counter += 1
             # Show dealer cards
             # Dealer draws
             # Determine winner
@@ -88,14 +87,16 @@ class App:
             return num_decks
 
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(InvalidInput),
+        retry=(tenacity.retry_if_exception_type(InvalidInput) | tenacity.retry_if_exception_type(IllegalBet)),
         stop=tenacity.stop_after_attempt(3)
     )
     def _get_starting_bet(self) -> int:
         """Get the starting bet for a round"""
         bet_amount = input("How much would you like to start betting this round?")
-        if type(bet_amount) != int:
-            raise InvalidInput("Bet amount must be a number")
+        try:
+            bet_amount = int(bet_amount)
+        except ValueError:
+            raise InvalidInput("Bet amount must be a number.")
         else:
             return bet_amount
 
@@ -133,6 +134,8 @@ class App:
         double_actions = ['d', 'double']
         # Split
         split_actions = ['sp', 'split']
+        # Bet on split
+        split_bet_actions = ['sb', 'split bet']
         # Surrender
         surrender_actions = ['su', 'surrender']
         # Stand
@@ -151,7 +154,80 @@ class App:
                 return 'double'
             elif player_action.lower() in split_actions:
                 return 'split'
+            elif player_action.lower() in split_bet_actions:
+                return 'split bet'
             elif player_action.lower() in surrender_actions:
                 return 'surrender'
             elif player_action.lower() in stand_actions:
                 return 'stand'
+
+    def _do_action(self, action, round):
+        """Run function associated with action"""
+        if action in ['split', 'surrender'] and round != 1:
+            print(f"Cannot {action} after the first round.")
+            return None
+        actions = {
+            'bet': self._round_bet,
+            'hit': self.player.hit,
+            'double': self.player.double,
+            'split': self._split_hand,
+            'split bet': self._bet_split,
+            'surrender': self.player.surrender,
+            'stand': self.player.stand,
+        }
+        return actions[action]()
+
+    @tenacity.retry(
+        retry=(tenacity.retry_if_exception_type(InvalidInput) | tenacity.retry_if_exception_type(IllegalBet)),
+        stop=tenacity.stop_after_attempt(3)
+    )
+    def _get_round_bet(self):
+        """Get bet during round"""
+        bet_amount = input("How much would you like to bet?")
+        try:
+            bet_amount = int(bet_amount)
+        except ValueError:
+            raise InvalidInput("Bet amount must be a number.")
+        else:
+            return bet_amount
+
+    def _round_bet(self):
+        """Update current bet"""
+        try:
+            bet_amt = self._get_round_bet()
+        except tenacity.RetryError:
+            print("Could not get a valid bet amount...")
+            self._game_over()
+        self.player.bet(bet_amt)
+
+    @tenacity.retry(
+        retry=(tenacity.retry_if_exception_type(InvalidInput) | tenacity.retry_if_exception_type(IllegalBet)),
+        stop=tenacity.stop_after_attempt(3)
+    )
+    def _get_split_bet(self):
+        """Get split bet"""
+        bet_amount = input("How much would you like to bet on the split?")
+        try:
+            bet_amount = int(bet_amount)
+        except ValueError:
+            raise InvalidInput("Bet amount must be a number.")
+        else:
+            return bet_amount
+
+    def _split_hand(self):
+        """Split the hand"""
+        try:
+            bet_amt = self._get_split_bet()
+        except tenacity.RetryError:
+            print("Could not get a valid bet amount...")
+            self._game_over()
+        self.player.split(bet_amt)
+
+    def _bet_split(self):
+        """Bet on the split hand"""
+        try:
+            bet_amt = self._get_split_bet()
+        except tenacity.RetryError:
+            print("Could not get a valid bet amount...")
+            self._game_over()
+        self.player.bet_split(bet_amt)

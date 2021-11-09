@@ -50,6 +50,19 @@ class Player:
         self.split_hand = self.hand.split()
         self.split_bet = init_bet
 
+    def bet_split(self, amount):
+        """Add to split bet"""
+        if not self._is_split:
+            raise IllegalBet("That bet is not available (no split)!")
+        if amount % 10 != 0:
+            raise IllegalBet("Must bet in multiples of 10!")
+        elif amount < 10:
+            raise IllegalBet("Bet must be larger than 0!")
+        elif self.wallet.balance - amount < 0:
+            raise IllegalBet("Cannot bet more than you have!")
+        else:
+            self.split_bet += amount
+
     def double(self):
         """Double bet and draw one card"""
         self.current_bet *= 2
