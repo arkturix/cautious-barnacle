@@ -111,9 +111,11 @@ class App:
     def _get_num_decks(self) -> int:
         """Get the number of decks desired"""
         num_decks = input("How many decks would you like to play with?")
-        if type(num_decks) != int:
+        try:
+            num_decks = int(num_decks)
+        except ValueError:
             raise InvalidInput("Decks must be a number!")
-        elif num_decks < 1 or num_decks > 8:
+        if num_decks < 1 or num_decks > 8:
             raise InvalidInput("Number of decks must be between 1 and 8.")
         else:
             return num_decks
