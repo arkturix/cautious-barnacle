@@ -11,3 +11,7 @@ class InvalidInput(Exception):
         self.message = message
         print(f"Invalid input! {self.message}")
         super().__init__(self.message)
+
+
+class IllegalSplit(Exception):
+    pass
