@@ -1,7 +1,7 @@
 """Player class"""
 from blackjack.common import Wallet
 from blackjack.common import Hand
-from blackjack.common.exceptions import IllegalBet
+from blackjack.common.exceptions import IllegalBet, IllegalSplit
 from blackjack.dealer import Dealer
 
 class Player:
@@ -17,12 +17,14 @@ class Player:
         initial_deal = self.dealer.deal()
         self.hand + initial_deal[0]
         self.hand + initial_deal[1]
-        self.current_bet = init_bet
+        self.bet(init_bet)
 
     def bet(self, amount):
         """Add to bet"""
         if amount % 10 != 0:
             raise IllegalBet("Must bet in multiples of 10!")
+        elif amount < 10:
+            raise IllegalBet("Bet must be larger than 0!")
         elif self.wallet.balance - amount < 0:
             raise IllegalBet("Cannot bet more than you have!")
         else:
@@ -42,6 +44,8 @@ class Player:
 
     def split(self, init_bet = 10):
         """Split the hand"""
+        if not self.hand.cards[0][0] == self.hand.cards[1][0]:  # Split cards must have the same value
+            raise IllegalSplit("Split cards must be the same value!")
         self._is_split = True
         self.split_hand = self.hand.split()
         self.split_bet = init_bet
