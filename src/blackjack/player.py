@@ -70,7 +70,6 @@ class Player:
 
     def resolve_round(self):
         """Resolve the round"""
-        # TODO: Figure out winning/losing bet
         self.current_bet = 0
         self._is_standing = False
         self.hand.reset()

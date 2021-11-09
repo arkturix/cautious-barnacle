@@ -14,6 +14,7 @@ class App:
         self.player = Player()  # Will be a Player object
         self.player_broke = False
         self.player_quit = False
+        self.quit_actions = ['q', 'quit']
 
     def _game_over(self):
         """Prints exit message and exits"""
@@ -23,6 +24,10 @@ class App:
     def _is_player_broke(self):
         """Determine if player is broke"""
         return self.player.wallet > 0
+
+    def _set_player_quit(self):
+        """Set the player quit flag"""
+        self.player_quit = not self.player_quit
 
     def run(self):
         clear()
@@ -39,7 +44,7 @@ class App:
             self.player.deal(init_bet=starting_bet)
             player_bust = False
             round_counter = 1
-            while not self.player._is_standing and not player_bust:
+            while not self.player._is_standing and not player_bust and not self.player_quit:
                 clear()
                 print(f"Your current bet: {self.player.current_bet}")
                 # Show dealer card
@@ -53,10 +58,19 @@ class App:
                     print("Failed to get a valid action...")
                     self._game_over()
                 self._do_action(action=action, round=round_counter)
+                if self.player.hand.total() > 21:
+                    player_bust = True
                 round_counter += 1
-            # Show dealer cards
-            # Dealer draws
-            # Determine winner
+            if self.player_quit:
+                self._game_over()
+            if player_bust:
+                # Handle end of round
+                pass
+            else:
+                # Show dealer cards
+                # Dealer draws
+                # Determine winner
+                pass
             # Resolve round
 
     def title_screen(self):
@@ -140,7 +154,7 @@ class App:
         surrender_actions = ['su', 'surrender']
         # Stand
         stand_actions = ['st', 'stand']
-        all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions
+        all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions + self.quit_actions
         
         player_action = input("What would you like to do?")
         if player_action.lower() not in all_actions:
@@ -160,6 +174,8 @@ class App:
                 return 'surrender'
             elif player_action.lower() in stand_actions:
                 return 'stand'
+            elif player_action.lower() in self.quit_actions:
+                return 'quit'
 
     def _do_action(self, action, round):
         """Run function associated with action"""
@@ -174,6 +190,7 @@ class App:
             'split bet': self._bet_split,
             'surrender': self.player.surrender,
             'stand': self.player.stand,
+            'quit': self._set_player_quit
         }
         return actions[action]()
 
