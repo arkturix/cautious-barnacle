@@ -1,4 +1,5 @@
 """Main application file"""
+from blackjack import player
 from blackjack.common import exceptions
 from blackjack.player import Player
 from blackjack.common.exceptions import InvalidInput
@@ -30,12 +31,34 @@ class App:
         self.title_screen()
         self.start_game()
         while not self.player_broke and not self.player_quit:
+            clear()
+            print("Let's play!")
             try: 
                 starting_bet = self._get_starting_bet()
             except tenacity.RetryError:
                 print("Failed to get starting bet...")
-                self._game_over
+                self._game_over()
             self.player.deal(init_bet=starting_bet)
+            player_bust = False
+            round_counter = 1
+            while not self.player._is_standing and not player_bust:
+                clear()
+                print(f"Your current bet: {self.player.current_bet}")
+                # Show dealer card
+                self._dealer_display_card()
+                # Show player cards
+                self._player_display_cards()
+                # Prompt user for action: bet, hit, double, split, surrender, stand
+                # Repeat until either hold or bust
+                try:
+                    action = self._prompt_player_action()
+                except tenacity.RetryError:
+                    print("Failed to get a valid action...")
+                    self._game_over()
+            # Show dealer cards
+            # Dealer draws
+            # Determine winner
+            # Resolve round
 
     def title_screen(self):
         print("!!!\t\tPython Blackjack\t\t!!!")
@@ -75,3 +98,60 @@ class App:
             raise InvalidInput("Bet amount must be a number")
         else:
             return bet_amount
+
+    def _dealer_display_card(self):
+        """Display dealer's initial card"""
+        dealer_initial_card_str = f"""
+        Dealer shows:
+        
+            {self.player.dealer.display_card[0]} of {self.player.dealer.display_card[1]}
+            and hole card, face-down.
+        
+        """
+        print(dealer_initial_card_str)
+
+    def _player_display_cards(self):
+        player_cards_str = f"""
+        Your hand is:
+
+        """
+        for card in self.player.hand.cards:
+            player_cards_str += f"    {card[0]} of {card[1]}\n"
+        player_cards_str += f"Your hand has a value of {self.player.hand.total()}"
+
+    @tenacity.retry(
+        retry=tenacity.retry_if_exception_type(InvalidInput),
+        stop=tenacity.stop_after_attempt(3)
+    )
+    def _prompt_player_action(self) -> str:
+        """Prompt player for action during round"""
+        # Bet
+        bet_actions = ['b', 'bet']
+        # Hit
+        hit_actions = ['h', 'hit']
+        # Double
+        double_actions = ['d', 'double']
+        # Split
+        split_actions = ['sp', 'split']
+        # Surrender
+        surrender_actions = ['su', 'surrender']
+        # Stand
+        stand_actions = ['st', 'stand']
+        all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions
+        
+        player_action = input("What would you like to do?")
+        if player_action.lower() not in all_actions:
+            raise InvalidInput(f"You entered {player_action}, this is not a valid action.")
+        else:
+            if player_action.lower() in bet_actions:
+                return 'bet'
+            elif player_action.lower() in hit_actions:
+                return 'hit'
+            elif player_action.lower() in double_actions:
+                return 'double'
+            elif player_action.lower() in split_actions:
+                return 'split'
+            elif player_action.lower() in surrender_actions:
+                return 'surrender'
+            elif player_action.lower() in stand_actions:
+                return 'stand'
