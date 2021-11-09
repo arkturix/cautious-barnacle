@@ -46,7 +46,7 @@ class App:
             round_counter = 1
             while not self.player._is_standing and not player_bust and not self.player_quit:
                 clear()
-                print(f"Your current bet: {self.player.current_bet}")
+                print(f"Your current bet: ${self.player.current_bet}")
                 # Show dealer card
                 self._dealer_display_card()
                 # Show player cards
@@ -64,14 +64,32 @@ class App:
             if self.player_quit:
                 self._game_over()
             if player_bust:
-                # Handle end of round
-                pass
+                self._player_bust()
             else:
-                # Show dealer cards
-                # Dealer draws
+                dealer_bust = False
+                while not dealer_bust and not self.player.dealer.hand.total() < 17:
+                    print(f"Your current bet: ${self.player.current_bet}")
+                    # Show dealer cards
+                    self._dealer_display_cards()
+                    self._player_display_cards()
+                    # Dealer draws
+                    self.player.dealer.draw()
+                    if self.player.dealer.hand.total > 21:
+                        dealer_bust = True
+                # Dealer busts
+                if dealer_bust:
+                    self._dealer_bust()
                 # Determine winner
-                pass
+                self._determine_winner()
             # Resolve round
+            response = input("Continue?")
+            if response.lower() in self.quit_actions:
+                self._set_player_quit()
+            self.player.resolve_round()
+            self.player.dealer.resolve()
+        if self.player_broke:
+            print("You're broke!!!")
+        self._game_over()
 
     def title_screen(self):
         print("!!!\t\tPython Blackjack\t\t!!!")
@@ -125,6 +143,17 @@ class App:
         """
         print(dealer_initial_card_str)
 
+    def _dealer_display_cards(self):
+        """Display all of the dealer's cards"""
+        dealer_cards_str = f"""
+        Dealer hand is:
+
+        """
+        for card in self.player.dealer.hand.cards:
+            dealer_cards_str += f"    {card[0]} of {card[1]}\n"
+        dealer_cards_str += f"Dealer hand has a value of {self.player.dealer.hand.total()}"
+        print(dealer_cards_str)
+
     def _player_display_cards(self):
         player_cards_str = f"""
         Your hand is:
@@ -133,6 +162,7 @@ class App:
         for card in self.player.hand.cards:
             player_cards_str += f"    {card[0]} of {card[1]}\n"
         player_cards_str += f"Your hand has a value of {self.player.hand.total()}"
+        print(player_cards_str)
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(InvalidInput),
@@ -248,3 +278,44 @@ class App:
             print("Could not get a valid bet amount...")
             self._game_over()
         self.player.bet_split(bet_amt)
+
+    def _player_bust(self):
+        """Inform player of bust"""
+        clear()
+        print(f"Your current bet: ${self.player.current_bet}")
+        self._dealer_display_cards()
+        self._player_display_cards()
+        print("!!!\tBUST\t!!!")
+        self._player_lose()
+
+    def _player_lose(self):
+        """Inform player of loss"""
+        print("You lost this hand.")
+        self.player.wallet - self.player.current_bet
+        print(f"You lost ${self.player.current_bet}. You have ${self.player.wallet.balance} remaining.")
+
+    def _player_win(self):
+        """Inform player of win"""
+        print("You won this hand!")
+        self.player.wallet + self.player.current_bet
+        print(f"You won ${self.player.current_bet}. You have ${self.player.wallet.balance} remaining.")
+
+    def _dealer_bust(self):
+        """Inform player of dealer bust"""
+        clear()
+        print(f"Your current bet: ${self.player.current_bet}")
+        self._dealer_display_cards()
+        self._player_display_cards()
+        print("!!!\tDEALER BUST\t!!!")
+        self._player_win()
+
+    def _determine_winner(self):
+        """Determine winner"""
+        clear()
+        print(f"Your current bet: ${self.player.current_bet}")
+        self._dealer_display_cards()
+        self._player_display_cards()
+        if self.player.hand.total() > self.player.dealer.hand.total():
+            self._player_win()
+        else:
+            self._player_lose()

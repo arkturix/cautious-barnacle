@@ -19,8 +19,13 @@ class Dealer:
         player_hand = [self.deck.draw() for i in range(2)]
         return player_hand
 
+    def draw(self):
+        """Draw card"""
+        self.hand + self.deck.draw()
+
     def resolve(self):
         """Resolve the dealer's hand"""
         self.display_card = None
         self.hole_card = None
         self.hand.reset()
+        self.deck.shuffle()
