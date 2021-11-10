@@ -3,6 +3,7 @@ from blackjack.player import Player
 from blackjack.common.exceptions import InvalidInput, IllegalBet
 import tenacity
 import os
+import time
 
 
 clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')  # Clear the screen
@@ -33,6 +34,7 @@ class App:
         clear()
         self.title_screen()
         self.start_game()
+        time.sleep(2)
         while not self.player_broke and not self.player_quit:
             clear()
             print("Let's play!")
@@ -44,6 +46,7 @@ class App:
             self.player.deal(init_bet=starting_bet)
             player_bust = False
             round_counter = 1
+            time.sleep(2)
             while not self.player._is_standing and not player_bust and not self.player_quit:
                 clear()
                 print(f"Your current bet: ${self.player.current_bet}")
@@ -61,6 +64,7 @@ class App:
                 if self.player.hand.total() > 21:
                     player_bust = True
                 round_counter += 1
+                time.sleep(2)
             if self.player_quit:
                 self._game_over()
             if player_bust:
@@ -68,6 +72,7 @@ class App:
             else:
                 dealer_bust = False
                 while not dealer_bust and self.player.dealer.hand.total() < 17:
+                    clear()
                     print(f"Your current bet: ${self.player.current_bet}")
                     # Show dealer cards
                     self._dealer_display_cards()
@@ -76,6 +81,7 @@ class App:
                     self.player.dealer.draw()
                     if self.player.dealer.hand.total > 21:
                         dealer_bust = True
+                    time.sleep(2)
                 # Dealer busts
                 if dealer_bust:
                     self._dealer_bust()
@@ -110,7 +116,7 @@ class App:
     )
     def _get_num_decks(self) -> int:
         """Get the number of decks desired"""
-        num_decks = input("How many decks would you like to play with?")
+        num_decks = input("How many decks would you like to play with?\n")
         try:
             num_decks = int(num_decks)
         except ValueError:
@@ -126,7 +132,7 @@ class App:
     )
     def _get_starting_bet(self) -> int:
         """Get the starting bet for a round"""
-        bet_amount = input("How much would you like to start betting this round?")
+        bet_amount = input("How much would you like to start betting this round?\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
@@ -188,7 +194,7 @@ class App:
         stand_actions = ['st', 'stand']
         all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions + self.quit_actions
         
-        player_action = input("What would you like to do?")
+        player_action = input("What would you like to do? ({})\n".format(', '.join(all_actions[::2])))
         if player_action.lower() not in all_actions:
             raise InvalidInput(f"You entered {player_action}, this is not a valid action.")
         else:
@@ -232,7 +238,7 @@ class App:
     )
     def _get_round_bet(self):
         """Get bet during round"""
-        bet_amount = input("How much would you like to bet?")
+        bet_amount = input("How much would you like to bet?\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
@@ -255,7 +261,7 @@ class App:
     )
     def _get_split_bet(self):
         """Get split bet"""
-        bet_amount = input("How much would you like to bet on the split?")
+        bet_amount = input("How much would you like to bet on the split?\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
