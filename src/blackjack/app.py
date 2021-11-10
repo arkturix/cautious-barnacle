@@ -63,7 +63,7 @@ class App:
                     print("Failed to get a valid action...")
                     self._game_over()
                 self._do_action(action=action, round=round_counter)
-                if self.player.hand.total() > 21:
+                if self.player.hand.total()[0] > 21:
                     player_bust = True
                 round_counter += 1
                 time.sleep(1)
@@ -73,7 +73,7 @@ class App:
                 self._player_bust()
             else:
                 dealer_bust = False
-                while not dealer_bust and self.player.dealer.hand.total() < 17:
+                while not dealer_bust and self.player.dealer.hand.total()[0] < 17:
                     clear()
                     print(f"Your current bet: ${self.player.current_bet}")
                     # Show dealer cards
@@ -81,7 +81,7 @@ class App:
                     self._player_display_cards()
                     # Dealer draws
                     self.player.dealer.draw()
-                    if self.player.dealer.hand.total() > 21:
+                    if self.player.dealer.hand.total()[0] > 21:
                         dealer_bust = True
                     time.sleep(1)
                 # Dealer busts
@@ -168,14 +168,14 @@ class App:
         dealer_cards_str = "\nDealer hand is:\n\n"
         for card in self.player.dealer.hand.cards:
             dealer_cards_str += f"    {card[0]} of {card[1]}\n"
-        dealer_cards_str += f"\nDealer hand has a value of {self.player.dealer.hand.total()}"
+        dealer_cards_str += f"\nDealer hand has a value of {self.player.dealer.hand.total()[0]}"
         print(dealer_cards_str)
 
     def _player_display_cards(self):
         player_cards_str = "\nYour hand is:\n\n"
         for card in self.player.hand.cards:
             player_cards_str += f"    {card[0]} of {card[1]}\n"
-        player_cards_str += f"\nYour hand has a value of {self.player.hand.total()}"
+        player_cards_str += f"\nYour hand has a value of {self.player.hand.total()[0]}"
         print(player_cards_str)
 
     @tenacity.retry(
@@ -324,13 +324,26 @@ class App:
         print("!!!\tDEALER BUST\t!!!")
         self._player_win()
 
+    def _tie(self):
+        """Inform player of tie"""
+        print("You tied with the dealer!")
+        print(f"Bet returned. You have ${self.player.wallet.balance} remaining.")
+
     def _determine_winner(self):
         """Determine winner"""
         clear()
         print(f"Your current bet: ${self.player.current_bet}")
         self._dealer_display_cards()
         self._player_display_cards()
-        if self.player.hand.total() > self.player.dealer.hand.total():
+        if self.player.hand.total()[1] and self.player.dealer.hand.total()[1]:
+            self._tie()
+        elif self.player.hand.total()[1] and not self.player.dealer.hand.total()[1]:
+            self._player_win()
+        elif not self.player.hand.total()[1] and self.player.dealer.hand.total()[1]:
+            self._player_lose()
+        elif self.player.hand.total()[0] == self.player.dealer.hand.total()[0]:
+            self._tie()
+        elif self.player.hand.total()[0] > self.player.dealer.hand.total()[0]:
             self._player_win()
         else:
             self._player_lose()

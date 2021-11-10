@@ -1,6 +1,9 @@
 """Hand class"""
 
 
+import blackjack
+
+
 class Hand:
 
     def __init__(self, cards = []) -> None:
@@ -16,12 +19,15 @@ class Hand:
     def total(self):
         """Get the total value of the hand"""
         hand_value = 0
+        true_blackjack = False
         aces = []
+        tens = []
         for card in self.cards:
             card_value = 0
             if card[0] == 'A':
                 aces.append('A')
-            elif card[0] in ['K', 'Q', 'J']:
+            elif card[0] in ['K', 'Q', 'J', 10]:
+                tens.append(card[0])
                 card_value = 10
             else:
                 card_value = card[0]
@@ -35,7 +41,9 @@ class Hand:
                 hand_value += 1
             else:
                 break
-        return hand_value
+        if hand_value == 21 and len(aces) == 1 and len(tens) == 1:
+            true_blackjack = True
+        return hand_value, true_blackjack
     
     def reset(self):
         """Empty the hand at the end of a round"""
