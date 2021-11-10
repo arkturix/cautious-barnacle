@@ -44,7 +44,7 @@ class Player:
     def split(self, init_bet = 10):
         """Split the hand"""
         card_vals=[]
-        for card in self.hand:
+        for card in self.hand.cards:
             if card[0] == 'A':
                 card_vals.append(1)
             elif card[0] in ['K', 'Q', 'J']:
