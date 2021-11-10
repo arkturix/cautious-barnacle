@@ -34,7 +34,7 @@ class App:
         clear()
         self.title_screen()
         self.start_game()
-        time.sleep(2)
+        time.sleep(1)
         while not self.player_broke and not self.player_quit:
             clear()
             print("Let's play!")
@@ -46,7 +46,7 @@ class App:
             self.player.deal(init_bet=starting_bet)
             player_bust = False
             round_counter = 1
-            time.sleep(2)
+            time.sleep(1)
             while not self.player._is_standing and not player_bust and not self.player_quit:
                 clear()
                 print(f"Your current bet: ${self.player.current_bet}")
@@ -64,7 +64,7 @@ class App:
                 if self.player.hand.total() > 21:
                     player_bust = True
                 round_counter += 1
-                time.sleep(2)
+                time.sleep(1)
             if self.player_quit:
                 self._game_over()
             if player_bust:
@@ -79,9 +79,9 @@ class App:
                     self._player_display_cards()
                     # Dealer draws
                     self.player.dealer.draw()
-                    if self.player.dealer.hand.total > 21:
+                    if self.player.dealer.hand.total() > 21:
                         dealer_bust = True
-                    time.sleep(2)
+                    time.sleep(1)
                 # Dealer busts
                 if dealer_bust:
                     self._dealer_bust()
