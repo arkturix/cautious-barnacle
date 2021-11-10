@@ -136,7 +136,7 @@ class App:
     )
     def _get_starting_bet(self) -> int:
         """Get the starting bet for a round"""
-        bet_amount = input("How much would you like to start betting this round?\n")
+        bet_amount = input(f"How much would you like to start betting this round? Min $10. You currently have ${self.player.wallet.balance}\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
