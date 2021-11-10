@@ -23,7 +23,7 @@ class App:
 
     def _is_player_broke(self):
         """Determine if player is broke"""
-        return self.player.wallet.balance < 0
+        return self.player.wallet.balance <= 0
 
     @property
     def player_broke(self):
@@ -136,7 +136,7 @@ class App:
     )
     def _get_starting_bet(self) -> int:
         """Get the starting bet for a round"""
-        bet_amount = input(f"How much would you like to start betting this round? Min $10. You currently have ${self.player.wallet.balance}\n")
+        bet_amount = input(f"How much would you like to start betting this round? Min $10.\nYou currently have ${self.player.wallet.balance}\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
