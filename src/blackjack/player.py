@@ -57,6 +57,10 @@ class Player:
         self.split_hand = self.hand.split()
         self.split_bet = init_bet
 
+    def hit_split(self):
+        """Take another card and put it into split hand"""
+        self.split_hand + self.dealer.deck.draw()
+
     def bet_split(self, amount):
         """Add to split bet"""
         if not self._is_split:

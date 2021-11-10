@@ -52,10 +52,14 @@ class App:
             while not self.player._is_standing and not player_bust and not self.player_broke and not self.player_quit:
                 clear()
                 print(f"Your current bet: ${self.player.current_bet}")
+                if self.player._is_split:
+                    print(f"Your current split bet: ${self.player.split_bet}")
                 # Show dealer card
                 self._dealer_display_card()
                 # Show player cards
                 self._player_display_cards()
+                if self.player._is_split:
+                    self._player_display_split_cards()
                 # Prompt user for action: bet, hit, double, split, surrender, stand
                 try:
                     action = self._prompt_player_action()
@@ -64,7 +68,12 @@ class App:
                     self._game_over()
                 self._do_action(action=action, round=round_counter)
                 if self.player.hand.total()[0] > 21:
-                    player_bust = True
+                    if not self.player._is_split:
+                        player_bust = True
+                    elif self.player._is_split and self.player.split_hand.total()[0] > 21:
+                        player_bust = True
+                    else:
+                        player_bust = player_bust
                 round_counter += 1
                 time.sleep(1)
             if self.player_quit:
@@ -178,6 +187,13 @@ class App:
         player_cards_str += f"\nYour hand has a value of {self.player.hand.total()[0]}"
         print(player_cards_str)
 
+    def _player_display_split_cards(self):
+        player_cards_str = "\nYour split hand is:\n\n"
+        for card in self.player.hand.cards:
+            player_cards_str += f"    {card[0]} of {card[1]}\n"
+        player_cards_str += f"\nYour split hand has a value of {self.player.hand.total()[0]}"
+        print(player_cards_str)
+
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(InvalidInput),
         stop=tenacity.stop_after_attempt(3),
@@ -195,11 +211,13 @@ class App:
         split_actions = ['sp', 'split']
         # Bet on split
         split_bet_actions = ['sb', 'split bet']
+        # Hit on split
+        split_hit_actions = ['sh', 'split hit']
         # Surrender
         surrender_actions = ['su', 'surrender']
         # Stand
         stand_actions = ['st', 'stand']
-        all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions + self.quit_actions
+        all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions + self.quit_actions + split_bet_actions + split_hit_actions
         
         player_action = input("What would you like to do? ({})\n".format(', '.join(all_actions[1::2])))
         if player_action.lower() not in all_actions:
@@ -215,6 +233,8 @@ class App:
                 return 'split'
             elif player_action.lower() in split_bet_actions:
                 return 'split bet'
+            elif player_action.lower() in split_hit_actions:
+                return 'split hit'
             elif player_action.lower() in surrender_actions:
                 return 'surrender'
             elif player_action.lower() in stand_actions:
@@ -233,6 +253,7 @@ class App:
             'double': self.player.double,
             'split': self._split_hand,
             'split bet': self._bet_split,
+            'split hit': self.player.hit_split,
             'surrender': self.player.surrender,
             'stand': self.player.stand,
             'quit': self._set_player_quit
@@ -309,11 +330,23 @@ class App:
         self.player.wallet - self.player.current_bet
         print(f"You lost ${self.player.current_bet}. You have ${self.player.wallet.balance} remaining.")
 
+    def _split_lose(self):
+        """Inform player of split loss"""
+        print("You lost the split hand.")
+        self.player.wallet - self.player.split_bet
+        print(f"You lost ${self.player.split_bet}. You have ${self.player.wallet.balance} remaining.")
+
     def _player_win(self):
         """Inform player of win"""
         print("You won this hand!")
         self.player.wallet + self.player.current_bet
         print(f"You won ${self.player.current_bet}. You have ${self.player.wallet.balance} remaining.")
+
+    def _split_win(self):
+        """Inform player of split win"""
+        print("You won the split hand!")
+        self.player.wallet + self.player.split_bet
+        print(f"You won ${self.player.split_bet}. You have ${self.player.wallet.balance} remaining.")
 
     def _dealer_bust(self):
         """Inform player of dealer bust"""
@@ -323,19 +356,31 @@ class App:
         self._player_display_cards()
         print("!!!\tDEALER BUST\t!!!")
         self._player_win()
+        if self.player._is_split:
+            self._split_win()
 
     def _tie(self):
         """Inform player of tie"""
         print("You tied with the dealer!")
         print(f"Bet returned. You have ${self.player.wallet.balance} remaining.")
 
+    def _split_tie(self):
+        """Inform player of tie"""
+        print("Your split tied with the dealer!")
+        print(f"Bet returned. You have ${self.player.wallet.balance} remaining.")
+
     def _determine_winner(self):
         """Determine winner"""
         clear()
         print(f"Your current bet: ${self.player.current_bet}")
+        if self.player._is_split:
+            print(f"Your current split bet: ${self.player.split_bet}")
         self._dealer_display_cards()
         self._player_display_cards()
-        if self.player.hand.total()[1] and self.player.dealer.hand.total()[1]:
+        if self.player.hand.total()[0] > 21:
+            print('!!!\t\tBUST\t\t!!!')
+            self._player_lose()
+        elif self.player.hand.total()[1] and self.player.dealer.hand.total()[1]:
             self._tie()
         elif self.player.hand.total()[1] and not self.player.dealer.hand.total()[1]:
             self._player_win()
@@ -347,3 +392,19 @@ class App:
             self._player_win()
         else:
             self._player_lose()
+        if self.player._is_split:
+            if self.player.split_hand.total()[0] > 21:
+                print('!!!\t\tBUST\t\t!!!')
+                self._split_lose
+            elif self.player.split_hand.total()[1] and self.player.dealer.hand.total()[1]:
+                self._split_tie()
+            elif self.player.split_hand.total()[1] and not self.player.dealer.hand.total()[1]:
+                self._split_win()
+            elif not self.player.split_hand.total()[1] and self.player.dealer.hand.total()[1]:
+                self._split_lose()
+            elif self.player.split_hand.total()[0] == self.player.dealer.hand.total()[0]:
+                self._split_tie()
+            elif self.player.split_hand.total()[0] > self.player.dealer.hand.total()[0]:
+                self._split_win()
+            else:
+                self._split_lose()
