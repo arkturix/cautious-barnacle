@@ -21,10 +21,8 @@ class Player:
 
     def bet(self, amount):
         """Add to bet"""
-        if amount % 10 != 0:
-            raise IllegalBet("Must bet in multiples of 10!")
-        elif amount < 10:
-            raise IllegalBet("Bet must be larger than 0!")
+        if amount < 10:
+            raise IllegalBet("Bet must be larger than $10!")
         elif self.wallet.balance - amount < 0:
             raise IllegalBet("Cannot bet more than you have!")
         else:
@@ -40,7 +38,7 @@ class Player:
 
     def surrender(self):
         """Surrender the hand"""
-        self.current_bet = int(self.current_bet / 2)
+        self.current_bet = int(self.current_bet // 2)
         self._is_standing = True
 
     def split(self, init_bet = 10):
