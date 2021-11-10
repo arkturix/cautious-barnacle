@@ -20,7 +20,7 @@ class Hand:
         for card in self.cards:
             card_value = 0
             if card[0] == 'A':
-                aces.append(self.cards.pop(card))
+                aces.append('A')
             elif card[0] in ['K', 'Q', 'J']:
                 card_value = 10
             else:
@@ -31,9 +31,10 @@ class Hand:
         for card in aces:
             if (hand_value + 11) <= 21:
                 hand_value += 11
-            else:
+            elif (hand_value + 1) <= 21:
                 hand_value += 1
-            self.cards.pop(card)
+            else:
+                break
         return hand_value
     
     def reset(self):
