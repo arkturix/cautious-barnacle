@@ -1,5 +1,6 @@
 """Deck(s) of cards class"""
 import random
+import time
 
 
 class Deck:
@@ -15,7 +16,7 @@ class Deck:
                 if card == 12: card = 'Q'
                 if card == 13: card = 'K'
                 one_deck.append((card, suit))
-        self._deck = one_deck * self.num_decks
+        self._deck = self._starting_deck = one_deck * self.num_decks
         self.shuffle()
 
     def shuffle(self):
@@ -24,4 +25,9 @@ class Deck:
 
     def draw(self):
         """Draw a card from the deck"""
+        if len(self._deck) == 0:
+            print(f"Shuffling {self.num_decks} before drawing next card...")
+            time.sleep(2)
+            self._deck = self._starting_deck  # Back fill deck when out of cards
+            self.shuffle()
         return self._deck.pop()
