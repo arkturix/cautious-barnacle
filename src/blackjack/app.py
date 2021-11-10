@@ -13,7 +13,6 @@ class App:
 
     def __init__(self) -> None:
         self.player = Player()  # Will be a Player object
-        self.player_broke = False
         self.player_quit = False
         self.quit_actions = ['q', 'quit']
 
@@ -25,6 +24,10 @@ class App:
     def _is_player_broke(self):
         """Determine if player is broke"""
         return self.player.wallet > 0
+
+    @property
+    def player_broke(self):
+        return self._is_player_broke()
 
     def _set_player_quit(self):
         """Set the player quit flag"""
@@ -38,16 +41,15 @@ class App:
         while not self.player_broke and not self.player_quit:
             clear()
             print("Let's play!")
-            try: 
-                starting_bet = self._get_starting_bet()
+            try:
+                self._deal()
             except tenacity.RetryError:
-                print("Failed to get starting bet...")
+                print("Failed to get valid initial bet...")
                 self._game_over()
-            self.player.deal(init_bet=starting_bet)
             player_bust = False
             round_counter = 1
             time.sleep(1)
-            while not self.player._is_standing and not player_bust and not self.player_quit:
+            while not self.player._is_standing and not player_bust and not self.player_broke and not self.player_quit:
                 clear()
                 print(f"Your current bet: ${self.player.current_bet}")
                 # Show dealer card
@@ -127,7 +129,7 @@ class App:
             return num_decks
 
     @tenacity.retry(
-        retry=(tenacity.retry_if_exception_type(InvalidInput) | tenacity.retry_if_exception_type(IllegalBet)),
+        retry=tenacity.retry_if_exception_type(InvalidInput),
         stop=tenacity.stop_after_attempt(3)
     )
     def _get_starting_bet(self) -> int:
@@ -139,6 +141,18 @@ class App:
             raise InvalidInput("Bet amount must be a number.")
         else:
             return bet_amount
+
+    @tenacity.retry(
+        retry=tenacity.retry_if_exception_type(IllegalBet),
+        stop=tenacity.stop_after_attempt(3)
+    )
+    def _deal(self):
+        try: 
+            starting_bet = self._get_starting_bet()
+            self.player.deal(init_bet=starting_bet)
+        except tenacity.RetryError:
+            print("Failed to get starting bet...")
+            self._game_over()
 
     def _dealer_display_card(self):
         """Display dealer's initial card"""
