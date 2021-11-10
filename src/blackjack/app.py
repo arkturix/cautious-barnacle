@@ -194,7 +194,7 @@ class App:
         stand_actions = ['st', 'stand']
         all_actions = bet_actions + hit_actions + double_actions + split_actions + surrender_actions + stand_actions + self.quit_actions
         
-        player_action = input("What would you like to do? ({})\n".format(', '.join(all_actions[::2])))
+        player_action = input("What would you like to do? ({})\n".format(', '.join(all_actions[1::2])))
         if player_action.lower() not in all_actions:
             raise InvalidInput(f"You entered {player_action}, this is not a valid action.")
         else:

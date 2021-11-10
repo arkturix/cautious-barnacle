@@ -41,6 +41,7 @@ class Player:
     def surrender(self):
         """Surrender the hand"""
         self.current_bet = int(self.current_bet / 2)
+        self._is_standing = True
 
     def split(self, init_bet = 10):
         """Split the hand"""
