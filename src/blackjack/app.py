@@ -23,7 +23,7 @@ class App:
 
     def _is_player_broke(self):
         """Determine if player is broke"""
-        return self.player.wallet > 0
+        return self.player.wallet.balance > 0
 
     @property
     def player_broke(self):
