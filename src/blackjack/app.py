@@ -67,7 +67,7 @@ class App:
                 self._player_bust()
             else:
                 dealer_bust = False
-                while not dealer_bust and not self.player.dealer.hand.total() < 17:
+                while not dealer_bust and self.player.dealer.hand.total() < 17:
                     print(f"Your current bet: ${self.player.current_bet}")
                     # Show dealer cards
                     self._dealer_display_cards()
