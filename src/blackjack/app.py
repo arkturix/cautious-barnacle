@@ -142,34 +142,22 @@ class App:
 
     def _dealer_display_card(self):
         """Display dealer's initial card"""
-        dealer_initial_card_str = f"""
-        Dealer shows:
-        
-            {self.player.dealer.display_card[0]} of {self.player.dealer.display_card[1]}
-            and hole card, face-down.
-        
-        """
+        dealer_initial_card_str = f"\nDealer shows:\n\n    {self.player.dealer.display_card[0]} of {self.player.dealer.display_card[1]}\n    and a hole card, face-down.\n\n"
         print(dealer_initial_card_str)
 
     def _dealer_display_cards(self):
         """Display all of the dealer's cards"""
-        dealer_cards_str = f"""
-        Dealer hand is:
-
-        """
+        dealer_cards_str = "\nDealer hand is:\n\n"
         for card in self.player.dealer.hand.cards:
             dealer_cards_str += f"    {card[0]} of {card[1]}\n"
-        dealer_cards_str += f"Dealer hand has a value of {self.player.dealer.hand.total()}"
+        dealer_cards_str += f"\nDealer hand has a value of {self.player.dealer.hand.total()}"
         print(dealer_cards_str)
 
     def _player_display_cards(self):
-        player_cards_str = f"""
-        Your hand is:
-
-        """
+        player_cards_str = "\nYour hand is:\n\n"
         for card in self.player.hand.cards:
             player_cards_str += f"    {card[0]} of {card[1]}\n"
-        player_cards_str += f"Your hand has a value of {self.player.hand.total()}"
+        player_cards_str += f"\nYour hand has a value of {self.player.hand.total()}"
         print(player_cards_str)
 
     @tenacity.retry(
