@@ -88,7 +88,8 @@ class App:
                 if dealer_bust:
                     self._dealer_bust()
                 # Determine winner
-                self._determine_winner()
+                else:
+                    self._determine_winner()
             # Resolve round
             response = input("Continue?")
             if response.lower() in self.quit_actions:
