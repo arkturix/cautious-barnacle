@@ -43,7 +43,15 @@ class Player:
 
     def split(self, init_bet = 10):
         """Split the hand"""
-        if not self.hand.cards[0][0] == self.hand.cards[1][0]:  # Split cards must have the same value
+        card_vals=[]
+        for card in self.hand:
+            if card[0] == 'A':
+                card_vals.append(1)
+            elif card[0] in ['K', 'Q', 'J']:
+                card_vals.append(11)
+            else:
+                card_vals.append(card[0])
+        if not card_vals[0] == card_vals[1]:  # Split cards must have the same value
             raise IllegalSplit("Split cards must be the same value!")
         self._is_split = True
         self.split_hand = self.hand.split()

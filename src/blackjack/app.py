@@ -245,7 +245,7 @@ class App:
     )
     def _get_round_bet(self):
         """Get bet during round"""
-        bet_amount = input("How much would you like to bet?\n")
+        bet_amount = input(f"How much would you like to bet? Current balance minus other bets ${self.player.wallet.balance - self.player.current_bet - self.player.split_bet}\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
@@ -268,7 +268,7 @@ class App:
     )
     def _get_split_bet(self):
         """Get split bet"""
-        bet_amount = input("How much would you like to bet on the split?\n")
+        bet_amount = input(f"How much would you like to bet on the split? Current balance minus other bets ${self.player.wallet.balance - self.player.current_bet - self.player.split_bet}\n")
         try:
             bet_amount = int(bet_amount)
         except ValueError:
