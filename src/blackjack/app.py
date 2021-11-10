@@ -12,7 +12,7 @@ clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')  # Clear the sc
 class App:
 
     def __init__(self) -> None:
-        self.player = Player()  # Will be a Player object
+        self.player = None  # Will be a Player object
         self.player_quit = False
         self.quit_actions = ['q', 'quit']
 
@@ -43,7 +43,7 @@ class App:
             print("Let's play!")
             try:
                 self._deal()
-            except tenacity.RetryError:
+            except IllegalBet:
                 print("Failed to get valid initial bet...")
                 self._game_over()
             player_bust = False
@@ -59,7 +59,7 @@ class App:
                 # Prompt user for action: bet, hit, double, split, surrender, stand
                 try:
                     action = self._prompt_player_action()
-                except tenacity.RetryError:
+                except InvalidInput:
                     print("Failed to get a valid action...")
                     self._game_over()
                 self._do_action(action=action, round=round_counter)
@@ -106,7 +106,7 @@ class App:
         """Initialize Player object"""
         try:
             num_decks = self._get_num_decks()
-        except tenacity.RetryError:
+        except InvalidInput:
             print("Failed to get a number of decks...")
             self._game_over()
         self.player = Player(num_of_decks=num_decks)
@@ -114,7 +114,8 @@ class App:
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(InvalidInput),
-        stop=tenacity.stop_after_attempt(3)
+        stop=tenacity.stop_after_attempt(3),
+        reraise=True
     )
     def _get_num_decks(self) -> int:
         """Get the number of decks desired"""
@@ -130,7 +131,8 @@ class App:
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(InvalidInput),
-        stop=tenacity.stop_after_attempt(3)
+        stop=tenacity.stop_after_attempt(3),
+        reraise=True
     )
     def _get_starting_bet(self) -> int:
         """Get the starting bet for a round"""
@@ -144,13 +146,14 @@ class App:
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(IllegalBet),
-        stop=tenacity.stop_after_attempt(3)
+        stop=tenacity.stop_after_attempt(3),
+        reraise=True
     )
     def _deal(self):
         try: 
             starting_bet = self._get_starting_bet()
             self.player.deal(init_bet=starting_bet)
-        except tenacity.RetryError:
+        except InvalidInput:
             print("Failed to get starting bet...")
             self._game_over()
 
@@ -176,7 +179,8 @@ class App:
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(InvalidInput),
-        stop=tenacity.stop_after_attempt(3)
+        stop=tenacity.stop_after_attempt(3),
+        reraise=True
     )
     def _prompt_player_action(self) -> str:
         """Prompt player for action during round"""
