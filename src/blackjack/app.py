@@ -189,9 +189,9 @@ class App:
 
     def _player_display_split_cards(self):
         player_cards_str = "\nYour split hand is:\n\n"
-        for card in self.player.hand.cards:
+        for card in self.player.split_hand.cards:
             player_cards_str += f"    {card[0]} of {card[1]}\n"
-        player_cards_str += f"\nYour split hand has a value of {self.player.hand.total()[0]}"
+        player_cards_str += f"\nYour split hand has a value of {self.player.split_hand.total()[0]}"
         print(player_cards_str)
 
     @tenacity.retry(
