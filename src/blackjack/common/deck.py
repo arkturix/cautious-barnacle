@@ -1,6 +1,7 @@
 """Deck(s) of cards class"""
 import random
 import time
+from copy import deepcopy
 
 
 class Deck:
@@ -16,7 +17,8 @@ class Deck:
                 if card == 12: card = 'Q'
                 if card == 13: card = 'K'
                 one_deck.append((card, suit))
-        self._deck = self._starting_deck = one_deck * self.num_decks
+        self._starting_deck = one_deck * self.num_decks
+        self._deck = deepcopy(self._starting_deck)
         self.shuffle()
 
     def shuffle(self):
@@ -28,6 +30,6 @@ class Deck:
         if len(self._deck) == 0:
             print(f"Shuffling {self.num_decks} before drawing next card...")
             time.sleep(2)
-            self._deck = self._starting_deck  # Back fill deck when out of cards
+            self._deck = deepcopy(self._starting_deck)  # Back fill deck when out of cards
             self.shuffle()
         return self._deck.pop()
