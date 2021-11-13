@@ -378,8 +378,6 @@ class App:
             print(f"Your current split bet: ${self.player.split_bet}")
         self._dealer_display_cards()
         self._player_display_cards()
-        if self.player._is_split:
-            self._player_display_split_cards()
         if self.player.hand.total()[0] > 21:
             print('!!!\t\tBUST\t\t!!!')
             self._player_lose()
@@ -396,6 +394,7 @@ class App:
         else:
             self._player_lose()
         if self.player._is_split:
+            self._player_display_split_cards()
             if self.player.split_hand.total()[0] > 21:
                 print('!!!\t\tBUST\t\t!!!')
                 self._split_lose
