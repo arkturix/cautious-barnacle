@@ -78,6 +78,7 @@ class Player:
         """Double bet and draw one card"""
         self.current_bet *= 2
         self.hit()
+        self._is_standing = True
 
     def resolve_round(self):
         """Resolve the round"""

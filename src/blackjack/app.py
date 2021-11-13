@@ -147,12 +147,13 @@ class App:
     def _get_starting_bet(self) -> int:
         """Get the starting bet for a round"""
         bet_amount = input(f"How much would you like to start betting this round? Min $10.\nYou currently have ${self.player.wallet.balance}\n")
+        if not bet_amount:
+            bet_amount = 10  # Default to $10 bet amount if nothing is entered
         try:
             bet_amount = int(bet_amount)
         except ValueError:
             raise InvalidInput("Bet amount must be a number.")
-        else:
-            return bet_amount
+        return bet_amount
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(IllegalBet),
